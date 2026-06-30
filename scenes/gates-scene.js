@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { PULSE } from "../utils/animation-timing.js";
 import { createBlochSphere } from "./bloch-sphere.js";
 
 export function createGatesScene() {
@@ -130,7 +131,7 @@ export function createGatesScene() {
       cnotControl.mesh.material.emissiveIntensity = activeGate === "CNOT" ? 0.55 : 0.15;
       cnotTarget.mesh.material.emissiveIntensity = activeGate === "CNOT" ? 0.55 : 0.15;
     },
-    setPulseProgress(step, subT) {
+    setPulseProgress(step, subT, t = 0) {
       const positions = [-4, -1.2, 1.4, 3.5];
       const wireIdx = step <= 1 ? 0 : 0;
       const segStart = positions[Math.min(step, 3)];
@@ -138,7 +139,7 @@ export function createGatesScene() {
       const x = segStart + (segEnd - segStart) * subT;
       pulse.position.set(x, wireY[wireIdx], 0.2);
       if (step >= 2) {
-        pulse.children[0].material.opacity = 0.4 + Math.sin(performance.now() * 0.008) * 0.2;
+        pulse.children[0].material.opacity = 0.4 + Math.sin(t * PULSE) * 0.2;
       }
     },
   };

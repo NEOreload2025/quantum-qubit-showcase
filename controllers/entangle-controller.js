@@ -6,6 +6,7 @@ import {
   blochFromState,
   blochCoordsFromState,
 } from "../utils/quantum-math.js";
+import { PULSE, WOBBLE } from "../utils/animation-timing.js";
 import { createEntangleScene } from "../scenes/entangle-scene.js";
 
 export function createEntangleController({ canvas }) {
@@ -81,14 +82,25 @@ export function createEntangleController({ canvas }) {
 
   applyTwoQubit("phiPlus");
 
-  function tick(t) {
+  function tick(t, dt) {
     const preset = TWO_QUBIT_PRESETS[activeBell];
     entangle.animateLink(t, preset?.entangled);
-    entangle.root.rotation.y = Math.sin(t * 0.06) * 0.04;
+
+    if (preset?.reducedMixed && !measuredQ1) {
+      const q1coords = blochCoordsFromState(preset.q1);
+      const q2coords = blochCoordsFromState(preset.q2);
+      entangle.q1.setVector(new THREE.Vector3(q1coords.x, q1coords.y, q1coords.z), true, t);
+      entangle.q2.setVector(new THREE.Vector3(q2coords.x, q2coords.y, q2coords.z), true, t);
+    }
+
+    entangle.root.rotation.y = Math.sin(t * WOBBLE) * 0.05;
     if (measuredQ1) {
-      entangle.measureRing.material.opacity = 0.4 + Math.sin(t * 4) * 0.2;
+      entangle.measureRing.material.opacity = 0.4 + Math.sin(t * PULSE) * 0.2;
     } else {
-      entangle.measureRing.material.opacity *= 0.95;
+      entangle.measureRing.material.opacity = Math.max(
+        0,
+        entangle.measureRing.material.opacity - dt * 2
+      );
     }
     orbit.update();
   }

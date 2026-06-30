@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { PULSE, WOBBLE } from "../utils/animation-timing.js";
 import { createBlochSphere } from "./bloch-sphere.js";
 
 export function createEntangleScene() {
@@ -95,8 +96,8 @@ export function createEntangleScene() {
     },
     animateLink(t, entangled) {
       if (!entangled) return;
-      link.material.opacity = 0.45 + Math.sin(t * 3) * 0.25;
-      link.rotation.y = Math.sin(t * 0.5) * 0.15;
+      link.material.opacity = 0.45 + Math.sin(t * PULSE) * 0.25;
+      link.rotation.y = Math.sin(t * WOBBLE) * 0.12;
     },
   };
 }

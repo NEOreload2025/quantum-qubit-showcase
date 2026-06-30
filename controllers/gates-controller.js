@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CIRCUIT_STEPS, blochCoordsFromState } from "../utils/quantum-math.js";
+import { WOBBLE } from "../utils/animation-timing.js";
 import { createGatesScene } from "../scenes/gates-scene.js";
 
 export function createGatesController({ canvas }) {
@@ -28,9 +29,16 @@ export function createGatesController({ canvas }) {
     circuitDescEl.textContent = step.desc;
     gates.setGateHighlight(step.activeGate);
     const coords = blochCoordsFromState(step.q1);
+    refreshBlochPreview(0);
+  }
+
+  function refreshBlochPreview(t) {
+    const step = CIRCUIT_STEPS[circuitStep];
+    const coords = blochCoordsFromState(step.q1);
     gates.blochPreview.setVector(
       new THREE.Vector3(coords.x, coords.y, coords.z),
-      Boolean(step.reducedMixed)
+      Boolean(step.reducedMixed),
+      t
     );
   }
 
@@ -71,10 +79,11 @@ export function createGatesController({ canvas }) {
 
   setCircuitStep(0);
 
-  function tick(t, activeView) {
+  function tick(t, _dt, activeView) {
     if (circuitPlaying || activeView === "gates") {
-      gates.setPulseProgress(circuitStep, circuitSubT);
-      gates.root.rotation.y = Math.sin(t * 0.08) * 0.05;
+      gates.setPulseProgress(circuitStep, circuitSubT, t);
+      refreshBlochPreview(t);
+      gates.root.rotation.y = Math.sin(t * WOBBLE) * 0.05;
     }
     orbit.update();
   }

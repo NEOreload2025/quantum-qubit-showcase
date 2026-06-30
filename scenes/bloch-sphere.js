@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { PULSE } from "../utils/animation-timing.js";
 
 export function createBlochSphere(radius = 1, arrowColor = 0x34d399) {
   const group = new THREE.Group();
@@ -141,12 +142,12 @@ export function createBlochSphere(radius = 1, arrowColor = 0x34d399) {
     arrow,
     glow,
     mixedCloud,
-    setVector(vec, mixed = false) {
+    setVector(vec, mixed = false, t = 0) {
       if (mixed || vec.length() < 0.05) {
         arrow.visible = false;
         glow.visible = false;
         mixedCloud.visible = true;
-        mixedCloud.material.opacity = 0.3 + Math.sin(performance.now() * 0.003) * 0.1;
+        mixedCloud.material.opacity = 0.3 + Math.sin(t * PULSE) * 0.1;
         return;
       }
       arrow.visible = true;

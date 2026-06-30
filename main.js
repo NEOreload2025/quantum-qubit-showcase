@@ -101,13 +101,13 @@ const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
   const t = clock.getElapsedTime();
-  const dt = 0.08;
+  const dt = Math.min(clock.getDelta(), 0.1);
   const view = viewManager.getActiveView();
 
   bloch.tick(t, dt);
-  gates.tick(t, view);
-  entangle.tick(t);
-  processor.tick(t);
+  gates.tick(t, dt, view);
+  entangle.tick(t, dt);
+  processor.tick(t, dt);
 
   if (view === "bloch") bloch.render(renderer);
   else if (view === "gates") gates.render(renderer);

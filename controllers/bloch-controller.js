@@ -7,6 +7,7 @@ import {
   blochFromState,
   formatQubit,
 } from "../utils/quantum-math.js";
+import { GATE_BLEND, GATE_TRAVEL, PULSE, SPIN } from "../utils/animation-timing.js";
 import { createBlochSphere } from "../scenes/bloch-sphere.js";
 
 export function createBlochController({ canvas, scene: blochScene }) {
@@ -53,6 +54,7 @@ export function createBlochController({ canvas, scene: blochScene }) {
   let currentTheta = 0;
   let currentPhi = 0;
   let gateAnim = null;
+  let gatePulseEndT = 0;
 
   const stateFormula = document.getElementById("state-formula");
   const thetaSlider = document.getElementById("theta-slider");
@@ -133,15 +135,17 @@ export function createBlochController({ canvas, scene: blochScene }) {
       };
       btn.classList.add("gate-flash");
       setTimeout(() => btn.classList.remove("gate-flash"), 500);
-      bloch.group.userData.pulseUntil = performance.now() + 400;
+      gatePulseEndT = -1;
     });
   });
 
   setBlochAngles(0, 0);
 
   function tick(t, dt) {
+    if (gatePulseEndT === -1) gatePulseEndT = t + 0.4;
+
     if (gateAnim) {
-      gateAnim.t = Math.min(1, gateAnim.t + 0.06);
+      gateAnim.t = Math.min(1, gateAnim.t + dt * GATE_TRAVEL);
       const ease = gateAnim.t * gateAnim.t * (3 - 2 * gateAnim.t);
       currentTheta = gateAnim.start.theta + (gateAnim.end.theta - gateAnim.start.theta) * ease;
       currentPhi = gateAnim.start.phi + (gateAnim.end.phi - gateAnim.start.phi) * ease;
@@ -150,22 +154,22 @@ export function createBlochController({ canvas, scene: blochScene }) {
         gateAnim = null;
       }
     } else {
-      currentTheta += (targetTheta - currentTheta) * dt;
-      currentPhi += (targetPhi - currentPhi) * dt;
+      const blend = 1 - Math.exp(-GATE_BLEND * dt);
+      currentTheta += (targetTheta - currentTheta) * blend;
+      currentPhi += (targetPhi - currentPhi) * blend;
     }
 
     const vec = blochVector(currentTheta, currentPhi);
-    bloch.setVector(vec, blochFromState(qubitState).mixed);
+    bloch.setVector(vec, blochFromState(qubitState).mixed, t);
 
-    const pulse = bloch.group.userData.pulseUntil;
-    if (pulse && performance.now() < pulse) {
-      bloch.group.scale.setScalar(1 + Math.sin((pulse - performance.now()) * 0.02) * 0.03);
+    if (t < gatePulseEndT) {
+      bloch.group.scale.setScalar(1 + Math.sin((gatePulseEndT - t) * PULSE * 10) * 0.03);
     } else {
       bloch.group.scale.setScalar(1);
     }
 
-    bloch.group.rotation.y = t * 0.08;
-    particles.rotation.y = t * 0.02;
+    bloch.group.rotation.y = t * SPIN;
+    particles.rotation.y = t * SPIN * 0.5;
     orbit.update();
   }
 

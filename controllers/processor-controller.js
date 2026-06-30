@@ -1,4 +1,5 @@
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { PULSE, SPIN, WOBBLE } from "../utils/animation-timing.js";
 import { createProcessorScene } from "../scenes/processor-scene.js";
 
 export function createProcessorController({ canvas }) {
@@ -17,18 +18,18 @@ export function createProcessorController({ canvas }) {
     });
   });
 
-  function tick(t) {
+  function tick(t, _dt) {
     processor.qubitMeshes.forEach((q) => {
-      q.position.y = 0.15 + Math.sin(t * 2 + q.userData.phase) * 0.04;
-      q.material.emissiveIntensity = 0.4 + Math.sin(t * 1.5 + q.userData.phase) * 0.3;
+      q.position.y = 0.15 + Math.sin(t * PULSE + q.userData.phase) * 0.04;
+      q.material.emissiveIntensity = 0.4 + Math.sin(t * PULSE + q.userData.phase) * 0.3;
     });
     if (entangleToggle.checked) {
       processor.entangleLines.forEach((line, i) => {
-        line.material.opacity = 0.25 + Math.sin(t * 3 + i * 0.7) * 0.2;
+        line.material.opacity = 0.25 + Math.sin(t * PULSE + i * 0.7) * 0.2;
       });
     }
-    processor.cryostatRing.rotation.z = t * 0.15;
-    processor.group.rotation.y = Math.sin(t * 0.1) * 0.08;
+    processor.cryostatRing.rotation.z = t * SPIN;
+    processor.group.rotation.y = Math.sin(t * WOBBLE) * 0.08;
     orbit.update();
   }
 
