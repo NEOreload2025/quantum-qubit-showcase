@@ -122,25 +122,20 @@ export const BLOCH_PRESETS = {
   minus: { theta: 90, phi: 180 },
 };
 
-/** @typedef {{ label: string, formula: string, q1: QubitState, q2: QubitState, entangled: boolean, reducedMixed?: boolean, measureMap?: Record<string, QubitState> }} TwoQubitPreset */
-
 export const TWO_QUBIT_PRESETS = {
   product00: {
-    label: "|00⟩",
     formula: "|ψ⟩ = |00⟩",
     q1: stateFromBloch(0, 0),
     q2: stateFromBloch(0, 0),
     entangled: false,
   },
   productPlusPlus: {
-    label: "|++⟩",
     formula: "|ψ⟩ = |++⟩ = (|0⟩+|1⟩)/√2 ⊗ (|0⟩+|1⟩)/√2",
     q1: stateFromBloch(90, 0),
     q2: stateFromBloch(90, 0),
     entangled: false,
   },
   phiPlus: {
-    label: "|Φ⁺⟩",
     formula: "|ψ⟩ = (|00⟩ + |11⟩) / √2",
     q1: stateFromBloch(90, 0),
     q2: stateFromBloch(90, 0),
@@ -152,7 +147,6 @@ export const TWO_QUBIT_PRESETS = {
     },
   },
   phiMinus: {
-    label: "|Φ⁻⟩",
     formula: "|ψ⟩ = (|00⟩ − |11⟩) / √2",
     q1: stateFromBloch(90, 0),
     q2: stateFromBloch(90, 0),
@@ -164,7 +158,6 @@ export const TWO_QUBIT_PRESETS = {
     },
   },
   psiPlus: {
-    label: "|Ψ⁺⟩",
     formula: "|ψ⟩ = (|01⟩ + |10⟩) / √2",
     q1: stateFromBloch(90, 0),
     q2: stateFromBloch(90, 0),
@@ -176,7 +169,6 @@ export const TWO_QUBIT_PRESETS = {
     },
   },
   psiMinus: {
-    label: "|Ψ⁻⟩",
     formula: "|ψ⟩ = (|01⟩ − |10⟩) / √2",
     q1: stateFromBloch(90, 0),
     q2: stateFromBloch(90, 0),

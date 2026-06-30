@@ -118,18 +118,13 @@ export function createGatesScene() {
   );
   pulse.add(pulseGlow);
 
-  const gateMeshes = [hGate.mesh, cnotControl.mesh, cnotTarget.mesh];
-
   return {
     scene,
     camera,
     root,
     blochPreview,
     pulse,
-    gateMeshes,
-    wires,
     wireY,
-    gatePositions: { H: -1.2, CNOT: 1.4, end: 3.5 },
     setGateHighlight(activeGate) {
       hGate.mesh.material.emissiveIntensity = activeGate === "H" ? 0.55 : 0.15;
       cnotControl.mesh.material.emissiveIntensity = activeGate === "CNOT" ? 0.55 : 0.15;
