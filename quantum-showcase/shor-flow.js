@@ -3,6 +3,7 @@ const SHOR_STEPS = [
     id: 1,
     title: "輸入要分解的數字 N",
     plain: "例如 N = 15，我們想知道 15 = ? × ?",
+    why: "沒有目標數字，後面的演算法無從下手。",
     desc: "欲分解的合成數，例如 N = 15",
     detail: "Shor 演算法解決「大整數質因數分解」。這直接影響 RSA 等現代加密的安全性。",
     icon: "N",
@@ -11,7 +12,8 @@ const SHOR_STEPS = [
   {
     id: 2,
     title: "古典電腦先試試運氣",
-    plain: "隨機選一個 a（如 a=7），看 gcd(a,N) 是否直接找到因子",
+    plain: "隨機選 a（如 a=7），看能不能直接用 gcd 找到因子",
+    why: "有時不用量子電腦就能解，可省下量子資源。",
     desc: "檢查 N 是否為偶數、完全平方數；隨機選 a < N",
     detail: "若 gcd(a,N) > 1，已找到因子，結束。否則進入量子步驟求週期 r。",
     icon: "a",
@@ -20,7 +22,8 @@ const SHOR_STEPS = [
   {
     id: 3,
     title: "準備兩組量子位元",
-    plain: "寄存器 1 放指數 x，寄存器 2 放計算結果",
+    plain: "寄存器 1 記錄指數 x，寄存器 2 記錄 aˣ mod N 的結果",
+    why: "一組負責「試哪些 x」，一組負責「算結果」，分工才能平行運算。",
     desc: "第一寄存器 |0…0⟩，第二寄存器 |1⟩",
     detail: "第一寄存器將承載所有可能的 x 的疊加；第二寄存器用來計算 aˣ mod N。",
     icon: "|0⟩",
@@ -30,6 +33,7 @@ const SHOR_STEPS = [
     id: 4,
     title: "創建疊加態（H 閘門）",
     plain: "讓所有可能的 x 同時存在，一次平行嘗試",
+    why: "這是量子加速的核心：同時探索所有指數，而非逐一嘗試。",
     desc: "對第一寄存器施加 H⊗ⁿ",
     detail: "Hadamard 把 |0…0⟩ 變成所有 x 的均勻疊加 Σ|x⟩，這是量子平行性的來源。",
     icon: "H",
@@ -38,7 +42,8 @@ const SHOR_STEPS = [
   {
     id: 5,
     title: "計算 aˣ mod N",
-    plain: "量子電腦同時計算所有 x 對應的模冪值",
+    plain: "量子電腦同時計算每個 x 對應的模冪值",
+    why: "模冪結果會重複出現規律（週期 r），這是後續能找到因子的關鍵。",
     desc: "|x⟩|1⟩ → |x⟩|aˣ mod N⟩",
     detail: "這是量子算術黑盒 Uf。結果帶有週期性規律，但還看不清楚。",
     icon: "Uf",
@@ -48,6 +53,7 @@ const SHOR_STEPS = [
     id: 6,
     title: "量子傅立葉變換 QFT",
     plain: "把隱藏的週期規律變成明顯的峰值",
+    why: "週期藏在疊加態裡很難直接讀；QFT 把它轉成容易量測的頻率訊號。",
     desc: "對第一寄存器施加 QFT",
     detail: "QFT 類似古典 FFT，能把週期性訊號轉成頻率尖峰，讓週期 r 浮出水面。",
     icon: "QFT",
@@ -56,7 +62,8 @@ const SHOR_STEPS = [
   {
     id: 7,
     title: "量測，讀出週期線索",
-    plain: "量測結果近似 k/r，用連分數還原 r",
+    plain: "量測結果近似 k/r，用連分數還原真正的 r",
+    why: "量子部分到此為止；量測值是連接量子與古典計算的橋樑。",
     desc: "取得近似值 k / r 的測量結果",
     detail: "量測後量子態坍縮。古典電腦用連分數展開，從測量值推回週期 r。",
     icon: "M",
@@ -66,6 +73,7 @@ const SHOR_STEPS = [
     id: 8,
     title: "古典電腦算出因子",
     plain: "用 r 計算 gcd(a^(r/2)±1, N) 得到 p 和 q",
+    why: "週期 r 本身不是答案；gcd 才能把數學規律變成真正的質因子。",
     desc: "若 r 為偶數且 a^(r/2) ≢ −1 (mod N)",
     detail: "這步在古典電腦上完成。若條件成立，gcd 即給出 N 的非平凡因子。",
     icon: "gcd",
@@ -75,6 +83,7 @@ const SHOR_STEPS = [
     id: 9,
     title: "完成！N = p × q",
     plain: "15 = 3 × 5，質因數分解成功",
+    why: "分解完成意味著這個數的密碼強度已被破解（在足夠大的量子電腦上）。",
     desc: "N = p × q 分解完成",
     detail: "實用上分解 2048-bit RSA 仍需數百萬邏輯量子位元（含錯誤校正），仍是長期目標。",
     icon: "✓",
@@ -87,7 +96,7 @@ export function initShorFlow(container, { onStepChange } = {}) {
     <div class="shor-wrap">
       <div class="shor-intro card-inline">
         <strong>白話一句話：</strong>Shor 用「量子平行 + 找週期」把大數分解變快。
-        下方 9 步依序點選，或按自動播放。
+        下方 9 步依序點選，或按自動播放。每步都標註「為什麼重要」。
       </div>
       <div class="shor-header">
         <h2>Shor 演算法流程</h2>
@@ -147,6 +156,7 @@ export function initShorFlow(container, { onStepChange } = {}) {
       <span class="shor-node-id">${step.id}</span>
       <span class="shor-node-title">${step.title}</span>
       <span class="shor-node-desc">${step.plain}</span>
+      <span class="shor-node-why">💡 ${step.why}</span>
     `;
     node.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -172,6 +182,7 @@ export function initShorFlow(container, { onStepChange } = {}) {
       <div class="shor-detail-badge">步驟 ${step.id} / ${SHOR_STEPS.length}</div>
       <h3>${step.title}</h3>
       <p class="shor-detail-plain">${step.plain}</p>
+      <p class="shor-detail-why"><strong>為什麼重要：</strong>${step.why}</p>
       <p class="shor-detail-main">${step.desc}</p>
       <p class="shor-detail-sub">${step.detail}</p>
     `;

@@ -77,6 +77,37 @@ export function createBlochSphere(radius = 1, arrowColor = 0x34d399) {
   group.add(pole(new THREE.Vector3(r * 1.05, 0, 0), 0x34d399));
   group.add(pole(new THREE.Vector3(-r * 1.05, 0, 0), 0xf472b6));
 
+  function textSprite(text, color = "#e8edf8", fontSize = 22) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = color;
+    ctx.font = `600 ${fontSize}px JetBrains Mono, monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, 64, 32);
+    const tex = new THREE.CanvasTexture(canvas);
+    const sprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })
+    );
+    sprite.renderOrder = 10;
+    return sprite;
+  }
+
+  const labelSpecs = [
+    { text: "|0⟩", pos: [0, 0, r * 1.28], color: "#5ce1ff", scale: [0.75, 0.38, 1] },
+    { text: "|1⟩", pos: [0, 0, -r * 1.28], color: "#a78bfa", scale: [0.75, 0.38, 1] },
+    { text: "|+⟩", pos: [r * 1.28, 0, 0], color: "#34d399", scale: [0.65, 0.33, 1] },
+    { text: "疊加", pos: [0, r * 1.15, 0], color: "#f472b6", scale: [0.7, 0.35, 1], fontSize: 18 },
+  ];
+  labelSpecs.forEach(({ text, pos, color, scale, fontSize }) => {
+    const s = textSprite(text, color, fontSize);
+    s.position.set(...pos);
+    s.scale.set(...scale);
+    group.add(s);
+  });
+
   const arrow = new THREE.ArrowHelper(
     new THREE.Vector3(0, 0, 1),
     new THREE.Vector3(),

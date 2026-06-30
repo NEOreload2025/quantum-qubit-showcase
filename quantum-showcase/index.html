@@ -38,7 +38,15 @@
 
       <section class="card" id="bloch-controls">
         <h2>操控量子態</h2>
-        <p class="hint">選擇預設態、拖曳滑桿，或套用下方單量子位元閘門（H / X / Z / Y）。</p>
+        <p class="plain-intro">
+          <strong>白話說明：</strong>想像一顆地球儀——北極是 |0⟩（穩定為 0），南極是 |1⟩（穩定為 1）。
+          箭頭指向哪裡，就代表量子位元「偏向哪種狀態」。赤道附近則是<strong>疊加態</strong>：同時帶有 0 與 1 的成分。
+        </p>
+        <p class="angle-hint">
+          <strong>θ（極角）</strong>：箭頭離北極多遠——0° 完全是 |0⟩，180° 完全是 |1⟩。<br />
+          <strong>φ（方位角）</strong>：在赤道面上的「相位」方向——決定疊加時 0 與 1 的相對相位。
+        </p>
+        <p class="hint">選擇預設態、拖曳滑桿，或套用 H / X / Z / Y 閘門。拖曳右側 3D 球可旋轉視角。</p>
         <div class="state-buttons">
           <button class="state-btn active" data-state="zero">|0⟩ 基態</button>
           <button class="state-btn" data-state="one">|1⟩ 激發態</button>
@@ -69,7 +77,11 @@
 
       <section class="card" id="gates-controls" hidden>
         <h2>量子閘門電路</h2>
-        <p class="hint">H 將 |0⟩ 變為疊加態，CNOT 建立糾纏。右側迷你 Bloch 球同步顯示 q₀ 狀態。</p>
+        <p class="plain-intro">
+          <strong>白話說明：</strong>量子閘門就像「變換積木」。H 把確定的 0 變成「一半 0、一半 1」的疊加；
+          CNOT 讓兩個量子位元綁在一起——其中一個的狀態會影響另一個，這就是糾纏的起點。
+        </p>
+        <p class="hint">按播放觀看脈衝沿電路傳遞。右側迷你 Bloch 球顯示 q₀ 的變化。</p>
         <div class="formula-box">
           <code id="circuit-step">步驟 1 / 4：初始化</code>
         </div>
@@ -86,7 +98,12 @@
 
       <section class="card" id="entangle-controls" hidden>
         <h2>雙量子位元糾纏</h2>
-        <p class="hint">選擇 Bell 態或可分離態。糾纏態的單量子位元約化為最大混態（Bloch 球心）。量測 A 可觀察 B 的瞬間坍縮。</p>
+        <p class="plain-intro">
+          <strong>白話說明：</strong>兩顆量子位元「綁在一起」後，就不能各自獨立描述。
+          你量測 A 得到 0 或 1，B 會<strong>立刻</strong>變成對應的相關狀態——即使兩者相隔很遠。
+          糾纏態在單顆 Bloch 球上會縮到球心（最大混態）。
+        </p>
+        <p class="hint">選擇 Bell 態後，試著「量測 A」觀察 B 的瞬間變化。</p>
         <div class="state-buttons bell-buttons">
           <button class="bell-btn active" data-bell="phiPlus">|Φ⁺⟩</button>
           <button class="bell-btn" data-bell="phiMinus">|Φ⁻⟩</button>
@@ -111,7 +128,11 @@
 
       <section class="card" id="shor-controls" hidden>
         <h2>Shor 演算法導覽</h2>
-        <p class="hint">控制按鈕在右側面板。這裡同步顯示目前步驟的白話說明。</p>
+        <p class="plain-intro">
+          <strong>白話說明：</strong>要把大數拆成兩個質因子（如 15 = 3 × 5），古典電腦很慢。
+          Shor 的秘訣是：不硬除，而是用量子電腦找一個數學函數的「重複週期」，再反推出因子。
+        </p>
+        <p class="hint">右側為完整 9 步流程，每步附「為什麼重要」註解。可自動播放。</p>
         <div class="shor-sidebar-status" id="shor-sidebar-status">請點右側步驟，或按「自動播放」</div>
         <div class="circuit-actions">
           <button type="button" class="action-btn primary" id="shor-play-side">▶ 自動播放</button>
@@ -126,7 +147,11 @@
 
       <section class="card" id="processor-controls" hidden>
         <h2>量子處理器結構</h2>
-        <p class="hint">超導量子位元陣列示意。發光節點為量子位元，脈動連線為可操作的多量子位元耦合路徑。</p>
+        <p class="plain-intro">
+          <strong>白話說明：</strong>真正的量子電腦晶片長這樣——許多量子位元排列在低溫晶片上，
+          彼此之間有連線才能執行 CNOT 等多量子位元操作。發光節點是量子位元，脈動連線是可控耦合路徑。
+        </p>
+        <p class="hint">拖曳旋轉 3D 模型。實際裝置需在接近絕對零度（~mK）下運作。</p>
         <div class="stat-grid">
           <div class="stat"><span class="stat-value">12</span><span class="stat-label">量子位元</span></div>
           <div class="stat"><span class="stat-value">~mK</span><span class="stat-label">工作溫度</span></div>
@@ -189,9 +214,10 @@
       </div>
 
       <div class="legend" id="bloch-legend">
-        <div><i class="dot north"></i> |0⟩ 北極</div>
-        <div><i class="dot south"></i> |1⟩ 南極</div>
-        <div><i class="dot arrow"></i> 態向量</div>
+        <div><i class="dot north"></i> |0⟩ 北極（穩定為 0）</div>
+        <div><i class="dot south"></i> |1⟩ 南極（穩定為 1）</div>
+        <div><i class="dot pink"></i> 赤道附近 = 疊加態</div>
+        <div><i class="dot arrow"></i> 綠色箭頭 = 目前量子態</div>
       </div>
 
       <div class="legend" id="gate-legend" hidden>
