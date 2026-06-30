@@ -83,12 +83,14 @@ export function createBlochSphere(radius = 1, arrowColor = 0x34d399) {
     canvas.width = 128;
     canvas.height = 64;
     const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // 確保畫布乾淨
     ctx.fillStyle = color;
     ctx.font = `600 ${fontSize}px JetBrains Mono, monospace`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(text, 64, 32);
     const tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;   // 強制紋理更新，修復 F5 初次載入時標籤疊加的問題
     const sprite = new THREE.Sprite(
       new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })
     );

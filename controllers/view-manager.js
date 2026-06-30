@@ -136,6 +136,9 @@ export function createViewManager(deps) {
     });
   }
 
+  // 初始載入時主動套用狀態，避免 F5 時多個 legend 同時可見造成文字疊加
+  applyViewState(activeView);
+
   return {
     getActiveView: () => activeView,
     switchView,

@@ -537,6 +537,11 @@ input[type="range"]::-webkit-slider-thumb {
   pointer-events: none;
 }
 
+/* 確保即使有多個 legend 在同位置，hidden 的不會顯示，避免 F5 時疊字 */
+.legend[hidden] {
+  display: none !important;
+}
+
 .legend div {
   display: flex;
   align-items: center;
