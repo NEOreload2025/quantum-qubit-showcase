@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>量子電腦與量子位元 — 完整 3D 互動展示</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">◇</span>
+        <span>量子位元探索</span>
+      </div>
+      <nav class="view-tabs" role="tablist">
+        <button class="tab active" data-view="bloch" role="tab" aria-selected="true">Bloch 球</button>
+        <button class="tab" data-view="gates" role="tab" aria-selected="false">量子閘門</button>
+        <button class="tab" data-view="entangle" role="tab" aria-selected="false">量子糾纏</button>
+        <button class="tab" data-view="processor" role="tab" aria-selected="false">處理器</button>
+        <button class="tab" data-view="shor" role="tab" aria-selected="false">Shor</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="panel">
+      <section class="hero">
+        <p class="eyebrow">完整互動式 3D 教學</p>
+        <h1>量子電腦與量子位元</h1>
+        <p class="lead">
+          從 Bloch 球、量子閘門、雙量子位元糾纏，到 Shor 演算法——用三維模型與互動流程完整理解量子資訊。
+        </p>
+      </section>
+
+      <section class="card" id="bloch-controls">
+        <h2>操控量子態</h2>
+        <p class="hint">選擇預設態、拖曳滑桿，或套用下方單量子位元閘門（H / X / Z / Y）。</p>
+        <div class="state-buttons">
+          <button class="state-btn active" data-state="zero">|0⟩ 基態</button>
+          <button class="state-btn" data-state="one">|1⟩ 激發態</button>
+          <button class="state-btn" data-state="plus">|+⟩ 等權疊加</button>
+          <button class="state-btn" data-state="minus">|−⟩ 相位相反</button>
+        </div>
+        <div class="gate-row">
+          <span class="gate-label">套用閘門</span>
+          <div class="gate-buttons">
+            <button class="gate-btn" data-gate="H" title="Hadamard">H</button>
+            <button class="gate-btn" data-gate="X" title="Pauli-X">X</button>
+            <button class="gate-btn" data-gate="Z" title="Pauli-Z">Z</button>
+            <button class="gate-btn" data-gate="Y" title="Pauli-Y">Y</button>
+          </div>
+        </div>
+        <div class="slider-group">
+          <label for="theta-slider">極角 θ <span id="theta-value">0°</span></label>
+          <input type="range" id="theta-slider" min="0" max="180" value="0" step="1" />
+        </div>
+        <div class="slider-group">
+          <label for="phi-slider">方位角 φ <span id="phi-value">0°</span></label>
+          <input type="range" id="phi-slider" min="0" max="360" value="0" step="1" />
+        </div>
+        <div class="formula-box">
+          <code id="state-formula">|ψ⟩ = 1|0⟩ + 0|1⟩</code>
+        </div>
+      </section>
+
+      <section class="card" id="gates-controls" hidden>
+        <h2>量子閘門電路</h2>
+        <p class="hint">H 將 |0⟩ 變為疊加態，CNOT 建立糾纏。右側迷你 Bloch 球同步顯示 q₀ 狀態。</p>
+        <div class="formula-box">
+          <code id="circuit-step">步驟 1 / 4：初始化</code>
+        </div>
+        <p class="circuit-desc" id="circuit-desc">|q₀q₁⟩ = |00⟩</p>
+        <div class="circuit-actions">
+          <button class="action-btn primary" id="circuit-play">▶ 播放電路</button>
+          <button class="action-btn" id="circuit-next">下一步 →</button>
+        </div>
+        <ul class="bullet-list compact">
+          <li><strong>H</strong>：|0⟩ → (|0⟩+|1⟩)/√2，創建疊加</li>
+          <li><strong>CNOT</strong>：控制 0、目標 1，產生 |Φ⁺⟩ Bell 態</li>
+        </ul>
+      </section>
+
+      <section class="card" id="entangle-controls" hidden>
+        <h2>雙量子位元糾纏</h2>
+        <p class="hint">選擇 Bell 態或可分離態。糾纏態的單量子位元約化為最大混態（Bloch 球心）。量測 A 可觀察 B 的瞬間坍縮。</p>
+        <div class="state-buttons bell-buttons">
+          <button class="bell-btn active" data-bell="phiPlus">|Φ⁺⟩</button>
+          <button class="bell-btn" data-bell="phiMinus">|Φ⁻⟩</button>
+          <button class="bell-btn" data-bell="psiPlus">|Ψ⁺⟩</button>
+          <button class="bell-btn" data-bell="psiMinus">|Ψ⁻⟩</button>
+        </div>
+        <div class="state-buttons">
+          <button class="bell-btn" data-bell="product00">|00⟩</button>
+          <button class="bell-btn" data-bell="productPlusPlus">|++⟩</button>
+        </div>
+        <div class="formula-box">
+          <code id="entangle-formula">|ψ⟩ = (|00⟩ + |11⟩) / √2</code>
+        </div>
+        <div class="measure-row">
+          <span class="gate-label">量測量子位元 A</span>
+          <div class="gate-buttons">
+            <button class="measure-btn" data-measure="0">得 0</button>
+            <button class="measure-btn" data-measure="1">得 1</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="shor-controls" hidden>
+        <h2>Shor 演算法導覽</h2>
+        <p class="hint">控制按鈕在右側面板。這裡同步顯示目前步驟的白話說明。</p>
+        <div class="shor-sidebar-status" id="shor-sidebar-status">請點右側步驟，或按「自動播放」</div>
+        <div class="circuit-actions">
+          <button type="button" class="action-btn primary" id="shor-play-side">▶ 自動播放</button>
+          <button type="button" class="action-btn" id="shor-next-side">下一步 →</button>
+        </div>
+        <ul class="bullet-list compact">
+          <li><strong>目標</strong>：把大數 N 分解成 p × q</li>
+          <li><strong>量子部分</strong>：找 aˣ mod N 的週期 r</li>
+          <li><strong>古典部分</strong>：用 r 算 gcd 得因子</li>
+        </ul>
+      </section>
+
+      <section class="card" id="processor-controls" hidden>
+        <h2>量子處理器結構</h2>
+        <p class="hint">超導量子位元陣列示意。發光節點為量子位元，脈動連線為可操作的多量子位元耦合路徑。</p>
+        <div class="stat-grid">
+          <div class="stat"><span class="stat-value">12</span><span class="stat-label">量子位元</span></div>
+          <div class="stat"><span class="stat-value">~mK</span><span class="stat-label">工作溫度</span></div>
+          <div class="stat"><span class="stat-value">μs</span><span class="stat-label">相干時間</span></div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="entangle-toggle" checked />
+          <span>顯示糾纏連線動畫</span>
+        </label>
+      </section>
+
+      <section class="card content-block">
+        <h2>什麼是量子位元？</h2>
+        <p>
+          古典<strong>位元</strong>只能是 0 或 1；量子<strong>位元</strong>可處於
+          <strong>疊加態</strong> α|0⟩ + β|1⟩，帶有相位資訊，直到量測才坍縮。
+        </p>
+        <div class="compare">
+          <div class="compare-item classical">
+            <h3>古典位元</h3>
+            <div class="bit-demo">0 · 1</div>
+            <p>任一時刻只有一種確定狀態</p>
+          </div>
+          <div class="compare-item quantum">
+            <h3>量子位元</h3>
+            <div class="bit-demo">α|0⟩ + β|1⟩</div>
+            <p>連續態空間中的任意組合</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card content-block">
+        <h2>量子閘門與電路</h2>
+        <p>
+          量子閘門是<strong>可逆的酉變換</strong>。Hadamard 創建疊加，Pauli-X 翻轉 |0⟩↔|1⟩，CNOT 在兩量子位元間建立糾纏。
+          量子電腦 = 初始化 + 閘門序列 + 量測。
+        </p>
+      </section>
+
+      <section class="card content-block">
+        <h2>Shor 演算法</h2>
+        <p>
+          將大整數<strong>質因數分解</strong>從指數時間降至多項式時間，是量子計算最具代表性的突破之一。
+          切換至「Shor」分頁可逐步瀏覽完整流程。
+        </p>
+      </section>
+
+      <footer class="footer">
+        <p>拖曳 3D 場景旋轉 · 滾輪縮放 · 五種互動視圖</p>
+      </footer>
+    </aside>
+
+    <div class="canvas-wrap">
+      <canvas id="canvas"></canvas>
+      <div id="shor-panel" hidden aria-hidden="true"></div>
+
+      <div class="canvas-overlay" id="canvas-label">
+        <span class="overlay-tag">Bloch 球</span>
+        <span class="overlay-desc">單量子位元態空間</span>
+      </div>
+
+      <div class="legend" id="bloch-legend">
+        <div><i class="dot north"></i> |0⟩ 北極</div>
+        <div><i class="dot south"></i> |1⟩ 南極</div>
+        <div><i class="dot arrow"></i> 態向量</div>
+      </div>
+
+      <div class="legend" id="gate-legend" hidden>
+        <div><i class="dot north"></i> 脈衝：量子訊息流</div>
+        <div><i class="dot purple"></i> CNOT 控制線</div>
+        <div><i class="dot arrow"></i> 右側：q₀ 態預覽</div>
+      </div>
+
+      <div class="legend" id="entangle-legend" hidden>
+        <div><i class="dot north"></i> 量子位元 A</div>
+        <div><i class="dot south"></i> 量子位元 B</div>
+        <div><i class="dot pink"></i> 糾纏關聯</div>
+        <div><i class="dot cloud"></i> 球心 = 最大混態</div>
+      </div>
+    </div>
+  </main>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
