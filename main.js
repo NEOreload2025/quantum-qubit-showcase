@@ -97,17 +97,17 @@ window.addEventListener("resize", resize);
 resize();
 
 const clock = new THREE.Clock();
+let elapsedTime = 0;
+const tickMap = { bloch, gates, entangle, processor };
 
 function animate() {
   requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
   const dt = Math.min(clock.getDelta(), 0.1);
+  elapsedTime += dt;
+  const t = elapsedTime;
   const view = viewManager.getActiveView();
 
-  bloch.tick(t, dt);
-  gates.tick(t, dt, view);
-  entangle.tick(t, dt);
-  processor.tick(t, dt);
+  tickMap[view]?.tick(t, dt, view);
 
   if (view === "bloch") bloch.render(renderer);
   else if (view === "gates") gates.render(renderer);

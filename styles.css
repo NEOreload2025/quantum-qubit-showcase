@@ -1150,3 +1150,30 @@ input[type="range"]::-webkit-slider-thumb {
     animation: none;
   }
 }
+
+/* 觸控裝置:加大滑桿的拖曳目標(桌機滑鼠不受影響) */
+@media (pointer: coarse) {
+  input[type="range"] {
+    height: 24px;
+    background: linear-gradient(
+        rgba(255, 255, 255, 0.1),
+        rgba(255, 255, 255, 0.1)
+      )
+      center / 100% 4px no-repeat;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--glow);
+    cursor: pointer;
+  }
+}
