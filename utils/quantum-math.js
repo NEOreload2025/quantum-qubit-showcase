@@ -56,7 +56,7 @@ export function blochFromState(s) {
   const prob1 = b.re * b.re + b.im * b.im;
   const purity = prob0 * prob0 + prob1 * prob1;
 
-  if (purity < 0.98) {
+  if (purity < 0.999) {
     return { theta: 90, phi: 0, mixed: true, purity };
   }
 
@@ -74,6 +74,14 @@ export function formatQubit(s) {
   const fmt = (x) => (Math.abs(x) < 0.005 ? "0" : x.toFixed(2));
   const a = s.alpha;
   const b = s.beta;
+  let alphaStr;
+  if (Math.abs(a.im) < 0.005) {
+    alphaStr = `${fmt(a.re)}|0⟩`;
+  } else if (Math.abs(a.re) < 0.005) {
+    alphaStr = `${fmt(a.im)}i|0⟩`;
+  } else {
+    alphaStr = `(${fmt(a.re)}${a.im >= 0 ? "+" : ""}${fmt(a.im)}i)|0⟩`;
+  }
   let betaStr;
   if (Math.abs(b.im) < 0.005) {
     betaStr = `${fmt(b.re)}|1⟩`;
@@ -82,7 +90,7 @@ export function formatQubit(s) {
   } else {
     betaStr = `(${fmt(b.re)}${b.im >= 0 ? "+" : ""}${fmt(b.im)}i)|1⟩`;
   }
-  return `|ψ⟩ = ${fmt(a.re)}|0⟩ + ${betaStr}`;
+  return `|ψ⟩ = ${alphaStr} + ${betaStr}`;
 }
 
 const SQRT2 = Math.SQRT1_2;
