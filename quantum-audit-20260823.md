@@ -27,4 +27,12 @@
 
 ## 完整清單
 
-見 /tmp/quantum-n550-output.txt（25 項，含 P0/P1/P2/P3 優先級表）。
+原始 25 項清單（含 P0/P1/P2/P3 優先級表）當時存於 `/tmp/quantum-n550-output.txt`，
+該暫存檔已佚失，此處僅保留結論與 P0 細節。
+
+## 後續落地狀況（2026-09-12 補註）
+
+- ✅ 教學內容項：`formatQubit` 補 alpha 虛部、混態門檻 0.98→0.999 → 已於 `37e290a` 修復
+- ✅ 「非啟用場景仍 tick」（P0#2）→ `274bea1` "tick only active view" 已處理
+- ⬜ P0#1 OrbitControls 未 dispose → 本次查核時程式碼內仍未見 `dispose`，疑似未修
+- ⬜ P0#3 shor-flow 重複綁定 handler → 未查核
