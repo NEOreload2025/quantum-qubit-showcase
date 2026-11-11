@@ -40,7 +40,7 @@ python3 -m http.server 8765
 npm test
 ```
 
-`npm run build` 會對專案裡的 JavaScript 做語法檢查，不會產生打包檔，也不會改變 GitHub Pages 部署的靜態內容。測試使用 Vitest 與 jsdom，涵蓋量子態數學、閘門、糾纏量測、Shor 流程，以及場景切換時的控制器清理。
+`npm run build` 會對專案裡的 JavaScript 做語法檢查。這個步驟只驗證語法，GitHub Pages 仍部署原本的靜態檔案。測試使用 Vitest 與 jsdom，涵蓋量子態數學、閘門、糾纏量測、Shor 流程，以及場景切換時的控制器清理。
 
 ## 需求
 
