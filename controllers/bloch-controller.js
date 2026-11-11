@@ -9,6 +9,8 @@ import {
 } from "../utils/quantum-math.js";
 import { GATE_BLEND, GATE_TRAVEL, PULSE, SPIN } from "../utils/animation-timing.js";
 import { createBlochSphere } from "../scenes/bloch-sphere.js";
+import { disposeObject3D } from "../utils/scene-lifecycle.js";
+import { bindExclusive, releaseExclusive } from "../utils/dom-events.js";
 
 export function createBlochController({ canvas, scene: blochScene }) {
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
@@ -106,23 +108,29 @@ export function createBlochController({ canvas, scene: blochScene }) {
     }
   }
 
+  const owned = [];
+  function on(el, group, type, handler) {
+    const ac = bindExclusive(el, group, type, handler);
+    if (ac) owned.push(() => releaseExclusive(el, group, ac));
+  }
+
   stateButtons.forEach((btn) => {
     if (!btn.dataset.state) return;
-    btn.addEventListener("click", () => {
+    on(btn, "bloch-state", "click", () => {
       const preset = BLOCH_PRESETS[btn.dataset.state];
       if (preset) setBlochAngles(preset.theta, preset.phi);
     });
   });
 
-  thetaSlider.addEventListener("input", () => {
+  on(thetaSlider, "bloch-theta", "input", () => {
     setBlochAngles(Number(thetaSlider.value), Number(phiSlider.value), true);
   });
-  phiSlider.addEventListener("input", () => {
+  on(phiSlider, "bloch-phi", "input", () => {
     setBlochAngles(Number(thetaSlider.value), Number(phiSlider.value), true);
   });
 
   gateButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
+    on(btn, "bloch-gate", "click", () => {
       const gate = GATES[btn.dataset.gate];
       if (!gate) return;
       const start = { ...qubitState, alpha: { ...qubitState.alpha }, beta: { ...qubitState.beta } };
@@ -177,5 +185,21 @@ export function createBlochController({ canvas, scene: blochScene }) {
     renderer.render(blochScene, camera);
   }
 
-  return { camera, orbit, tick, render };
+  let alive = true;
+  function dispose() {
+    alive = false;
+    while (owned.length) owned.pop()();
+    disposeObject3D(blochScene);
+  }
+
+  const liveTick = tick;
+  return {
+    camera,
+    orbit,
+    tick(...args) {
+      if (alive) liveTick(...args);
+    },
+    render,
+    dispose,
+  };
 }

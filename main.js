@@ -1,10 +1,16 @@
 import * as THREE from "three";
-import { initShorFlow } from "./shor-flow.js";
+import { initShorFlow, stepForward } from "./shor-flow.js";
+import { bindExclusive, releaseExclusive } from "./utils/dom-events.js";
 import { createViewManager } from "./controllers/view-manager.js";
 import { createBlochController } from "./controllers/bloch-controller.js";
 import { createGatesController } from "./controllers/gates-controller.js";
 import { createEntangleController } from "./controllers/entangle-controller.js";
 import { createProcessorController } from "./controllers/processor-controller.js";
+import {
+  createAnimationLoop,
+  disposeShowcaseResources,
+  tickActive,
+} from "./utils/scene-lifecycle.js";
 
 const canvas = document.getElementById("canvas");
 const canvasWrap = document.querySelector(".canvas-wrap");
@@ -67,20 +73,20 @@ Object.entries(orbits).forEach(([name, orbit]) => {
 
 const shorPlaySide = document.getElementById("shor-play-side");
 const shorNextSide = document.getElementById("shor-next-side");
-if (shorPlaySide) {
-  shorPlaySide.addEventListener("click", () => {
-    viewManager.switchView("shor");
-    ensureShorController().play();
-  });
+const owned = [];
+function on(el, group, type, handler) {
+  const ac = bindExclusive(el, group, type, handler);
+  if (ac) owned.push(() => releaseExclusive(el, group, ac));
 }
-if (shorNextSide) {
-  shorNextSide.addEventListener("click", () => {
-    viewManager.switchView("shor");
-    const ctrl = ensureShorController();
-    const cur = ctrl.getActiveStep();
-    ctrl.selectStep(cur < 0 ? 0 : Math.min(cur + 1, 8));
-  });
-}
+on(shorPlaySide, "shor-side-play", "click", () => {
+  viewManager.switchView("shor");
+  ensureShorController().play();
+});
+on(shorNextSide, "shor-side-next", "click", () => {
+  viewManager.switchView("shor");
+  const ctrl = ensureShorController();
+  ctrl.selectStep(stepForward(ctrl.getActiveStep()));
+});
 
 function resize() {
   const w = canvasWrap.clientWidth;
@@ -93,26 +99,47 @@ function resize() {
   });
 }
 
-window.addEventListener("resize", resize);
+on(window, "showcase-resize", "resize", resize);
 resize();
 
 const clock = new THREE.Clock();
 let elapsedTime = 0;
 const tickMap = { bloch, gates, entangle, processor };
+const controllers = [bloch, gates, entangle, processor];
 
-function animate() {
-  requestAnimationFrame(animate);
+const loop = createAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.1);
   elapsedTime += dt;
   const t = elapsedTime;
   const view = viewManager.getActiveView();
 
-  tickMap[view]?.tick(t, dt, view);
+  tickActive(tickMap, view, t, dt);
 
   if (view === "bloch") bloch.render(renderer);
   else if (view === "gates") gates.render(renderer);
   else if (view === "entangle") entangle.render(renderer);
   else if (view === "processor") processor.render(renderer);
+});
+
+let tornDown = false;
+
+function disposeShowcase() {
+  if (tornDown) return;
+  tornDown = true;
+  loop.stop();
+  for (const key of Object.keys(tickMap)) delete tickMap[key];
+  for (const ctrl of controllers) ctrl.dispose?.();
+  viewManager.dispose?.();
+  disposeShowcaseResources({
+    unbind: owned,
+    renderer,
+  });
 }
 
-animate();
+function onPageHide(event) {
+  if (event.persisted) return;
+  disposeShowcase();
+}
+
+on(window, "showcase-pagehide", "pagehide", onPageHide);
+loop.start();

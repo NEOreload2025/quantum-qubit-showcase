@@ -1,0 +1,13 @@
+{
+  "name": "quantum-qubit-showcase",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/check-syntax.mjs",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "jsdom": "^31.0.0",
+    "vitest": "^5.1.0"
+  }
+}

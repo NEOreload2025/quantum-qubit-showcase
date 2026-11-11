@@ -13,23 +13,40 @@ quantum-qubit-showcase/
 ├── controllers/        # 場景控制與視圖切換
 ├── scenes/             # Three.js 3D 場景
 ├── utils/              # 量子態數學
+├── tests/              # Vitest 單元測試
+├── .github/workflows/  # CI（install、語法檢查、測試）
 ├── .nojekyll           # GitHub Pages 略過 Jekyll 處理
 ├── README.md
 └── .gitignore
 ```
 
-## 預覽
+## 本機執行
+
+需要 Node.js 22+（測試與語法檢查）以及一個靜態檔案伺服器。頁面使用 ES Modules，不能直接用 `file://` 開啟。
 
 ```bash
+npm install
+npm test
 python3 -m http.server 8765
 ```
 
 瀏覽器開啟 http://localhost:8765/
 
+只想預覽、不跑測試時，可以略過 `npm install`，直接啟動上面的靜態伺服器。
+
+## 測試
+
+```bash
+npm test
+```
+
+`npm run build` 會對專案裡的 JavaScript 做語法檢查。這個步驟只驗證語法，GitHub Pages 仍部署原本的靜態檔案。測試使用 Vitest 與 jsdom，涵蓋量子態數學、閘門、糾纏量測、Shor 流程，以及場景切換時的控制器清理。
+
 ## 需求
 
 - 現代瀏覽器（支援 ES Modules）
 - 本機 HTTP 伺服器（不可直接用 `file://` 開啟）
+- Node.js 22+（僅測試與 `npm run build` 需要）
 
 ## GitHub Pages
 

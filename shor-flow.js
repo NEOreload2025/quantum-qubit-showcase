@@ -1,4 +1,4 @@
-const SHOR_STEPS = [
+export const SHOR_STEPS = [
   {
     id: 1,
     title: "輸入要分解的數字 N",
@@ -91,7 +91,23 @@ const SHOR_STEPS = [
   },
 ];
 
+const liveFlows = new WeakMap();
+
+/** Next step index. A missing selection (-1) starts at the first step. */
+export function stepForward(activeStep, count = SHOR_STEPS.length) {
+  if (count <= 0) return -1;
+  if (activeStep < 0) return 0;
+  return Math.min(activeStep + 1, count - 1);
+}
+
+/** Previous step index. Stays on the first step once there. */
+export function stepBackward(activeStep) {
+  return activeStep <= 0 ? 0 : activeStep - 1;
+}
+
 export function initShorFlow(container, { onStepChange } = {}) {
+  liveFlows.get(container)?.dispose();
+
   container.innerHTML = `
     <div class="shor-wrap">
       <div class="shor-intro card-inline">
@@ -145,6 +161,7 @@ export function initShorFlow(container, { onStepChange } = {}) {
   const nextBtn = container.querySelector('[data-action="next"]');
 
   const nodeEls = [];
+  const ac = new AbortController();
 
   SHOR_STEPS.forEach((step, i) => {
     const node = document.createElement("button");
@@ -161,7 +178,7 @@ export function initShorFlow(container, { onStepChange } = {}) {
     node.addEventListener("click", (e) => {
       e.stopPropagation();
       selectStep(i, false);
-    });
+    }, { signal: ac.signal });
     flowEl.appendChild(node);
     nodeEls.push(node);
 
@@ -176,6 +193,8 @@ export function initShorFlow(container, { onStepChange } = {}) {
   let activeStep = -1;
   let playing = false;
   let playTimer = null;
+  let flashTimer = null;
+  let disposed = false;
 
   function renderDetail(step, idx) {
     detailEl.innerHTML = `
@@ -189,12 +208,16 @@ export function initShorFlow(container, { onStepChange } = {}) {
     progressEl.textContent = `${idx + 1} / ${SHOR_STEPS.length}`;
     statusEl.textContent = `目前：步驟 ${step.id} — ${step.title}`;
     statusEl.classList.add("flash");
-    setTimeout(() => statusEl.classList.remove("flash"), 600);
+    if (flashTimer) clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => {
+      flashTimer = null;
+      statusEl.classList.remove("flash");
+    }, 600);
     onStepChange?.(step, idx);
   }
 
   function selectStep(idx, fromPlay = false) {
-    if (idx < 0 || idx >= SHOR_STEPS.length) return;
+    if (disposed || idx < 0 || idx >= SHOR_STEPS.length) return;
     activeStep = idx;
 
     const arrows = flowEl.querySelectorAll(".shor-arrow");
@@ -205,7 +228,8 @@ export function initShorFlow(container, { onStepChange } = {}) {
     arrows.forEach((a, i) => a.classList.toggle("active", i < idx));
 
     renderDetail(SHOR_STEPS[idx], idx);
-    nodeEls[idx].scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (disposed) return;
+    nodeEls[idx].scrollIntoView?.({ behavior: "smooth", block: "nearest" });
 
     if (!fromPlay) stopPlay();
   }
@@ -220,6 +244,7 @@ export function initShorFlow(container, { onStepChange } = {}) {
   }
 
   function startPlay() {
+    if (disposed) return;
     if (playing) {
       stopPlay();
       return;
@@ -253,22 +278,36 @@ export function initShorFlow(container, { onStepChange } = {}) {
     statusEl.textContent = "尚未選擇步驟";
   }
 
-  playBtn.addEventListener("click", (e) => { e.stopPropagation(); startPlay(); });
-  resetBtn.addEventListener("click", (e) => { e.stopPropagation(); reset(); });
+  playBtn.addEventListener("click", (e) => { e.stopPropagation(); startPlay(); }, { signal: ac.signal });
+  resetBtn.addEventListener("click", (e) => { e.stopPropagation(); reset(); }, { signal: ac.signal });
   prevBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    selectStep(activeStep <= 0 ? 0 : activeStep - 1);
-  });
+    selectStep(stepBackward(activeStep));
+  }, { signal: ac.signal });
   nextBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    selectStep(activeStep < 0 ? 0 : Math.min(activeStep + 1, SHOR_STEPS.length - 1));
-  });
+    selectStep(stepForward(activeStep));
+  }, { signal: ac.signal });
 
-  return {
+  const api = {
     stopPlay,
     play: startPlay,
     reset,
     selectStep,
     getActiveStep: () => activeStep,
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      stopPlay();
+      if (flashTimer) {
+        clearTimeout(flashTimer);
+        flashTimer = null;
+      }
+      ac.abort();
+      if (liveFlows.get(container) === api) liveFlows.delete(container);
+    },
   };
+
+  liveFlows.set(container, api);
+  return api;
 }

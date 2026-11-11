@@ -1,3 +1,6 @@
+import { disposeAllOrbits, syncOrbitListeners } from "../utils/scene-lifecycle.js";
+import { bindExclusive, releaseExclusive } from "../utils/dom-events.js";
+
 export const VIEW_META = {
   bloch: {
     tag: "Bloch 球",
@@ -88,10 +91,7 @@ export function createViewManager(deps) {
       shorControllerRef.current?.stopPlay?.();
     }
 
-    orbits.bloch.enabled = view === "bloch";
-    orbits.gates.enabled = view === "gates";
-    orbits.entangle.enabled = view === "entangle";
-    orbits.processor.enabled = view === "processor";
+    syncOrbitListeners(orbits, view);
 
     activeView = view;
   }
@@ -121,11 +121,16 @@ export function createViewManager(deps) {
     }
   }
 
+  const owned = [];
   tabs.forEach((tab) => {
-    tab.addEventListener("click", () => switchView(tab.dataset.view));
+    const ac = bindExclusive(tab, "view-tab", "click", () => switchView(tab.dataset.view));
+    if (ac) owned.push(() => releaseExclusive(tab, "view-tab", ac));
   });
 
+  const dragBound = new WeakSet();
   function bindOrbitDragFeedback(orbit, name) {
+    if (!orbit || dragBound.has(orbit)) return;
+    dragBound.add(orbit);
     orbit.addEventListener("start", () => {
       canvasWrap.classList.add("is-dragging");
       canvasWrap.dataset.dragScene = name;
@@ -139,10 +144,17 @@ export function createViewManager(deps) {
   // 初始載入時主動套用狀態，避免 F5 時多個 legend 同時可見造成文字疊加
   applyViewState(activeView);
 
+  function dispose() {
+    while (owned.length) owned.pop()();
+    disposeAllOrbits(orbits);
+    shorControllerRef.current?.dispose?.();
+  }
+
   return {
     getActiveView: () => activeView,
     switchView,
     bindOrbitDragFeedback,
     applyViewState,
+    dispose,
   };
 }
