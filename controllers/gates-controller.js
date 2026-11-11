@@ -3,6 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CIRCUIT_STEPS, blochCoordsFromState } from "../utils/quantum-math.js";
 import { WOBBLE } from "../utils/animation-timing.js";
 import { createGatesScene } from "../scenes/gates-scene.js";
+import { disposeObject3D } from "../utils/scene-lifecycle.js";
 
 export function createGatesController({ canvas }) {
   const gates = createGatesScene();
@@ -92,5 +93,26 @@ export function createGatesController({ canvas }) {
     renderer.render(gates.scene, gates.camera);
   }
 
-  return { camera: gates.camera, orbit, tick, render };
+  let alive = true;
+  function dispose() {
+    alive = false;
+    circuitPlaying = false;
+    if (circuitTimer) {
+      clearInterval(circuitTimer);
+      circuitTimer = null;
+    }
+    disposeObject3D(gates.scene);
+  }
+
+  const liveTick = tick;
+  return {
+    camera: gates.camera,
+    orbit,
+    scene: gates.scene,
+    tick(...args) {
+      if (alive) liveTick(...args);
+    },
+    render,
+    dispose,
+  };
 }

@@ -8,6 +8,7 @@ import {
 } from "../utils/quantum-math.js";
 import { PULSE, WOBBLE } from "../utils/animation-timing.js";
 import { createEntangleScene } from "../scenes/entangle-scene.js";
+import { disposeObject3D } from "../utils/scene-lifecycle.js";
 
 export function createEntangleController({ canvas }) {
   const entangle = createEntangleScene();
@@ -109,5 +110,21 @@ export function createEntangleController({ canvas }) {
     renderer.render(entangle.scene, entangle.camera);
   }
 
-  return { camera: entangle.camera, orbit, tick, render };
+  let alive = true;
+  function dispose() {
+    alive = false;
+    disposeObject3D(entangle.scene);
+  }
+
+  const liveTick = tick;
+  return {
+    camera: entangle.camera,
+    orbit,
+    scene: entangle.scene,
+    tick(...args) {
+      if (alive) liveTick(...args);
+    },
+    render,
+    dispose,
+  };
 }

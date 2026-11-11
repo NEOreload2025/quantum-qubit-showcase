@@ -1,3 +1,5 @@
+import { disposeAllOrbits, syncOrbitListeners } from "../utils/scene-lifecycle.js";
+
 export const VIEW_META = {
   bloch: {
     tag: "Bloch 球",
@@ -88,10 +90,7 @@ export function createViewManager(deps) {
       shorControllerRef.current?.stopPlay?.();
     }
 
-    orbits.bloch.enabled = view === "bloch";
-    orbits.gates.enabled = view === "gates";
-    orbits.entangle.enabled = view === "entangle";
-    orbits.processor.enabled = view === "processor";
+    syncOrbitListeners(orbits, view);
 
     activeView = view;
   }
@@ -121,8 +120,11 @@ export function createViewManager(deps) {
     }
   }
 
+  const tabListeners = [];
   tabs.forEach((tab) => {
-    tab.addEventListener("click", () => switchView(tab.dataset.view));
+    const handler = () => switchView(tab.dataset.view);
+    tab.addEventListener("click", handler);
+    tabListeners.push([tab, handler]);
   });
 
   function bindOrbitDragFeedback(orbit, name) {
@@ -139,10 +141,20 @@ export function createViewManager(deps) {
   // 初始載入時主動套用狀態，避免 F5 時多個 legend 同時可見造成文字疊加
   applyViewState(activeView);
 
+  function dispose() {
+    for (const [tab, handler] of tabListeners) {
+      tab.removeEventListener("click", handler);
+    }
+    tabListeners.length = 0;
+    disposeAllOrbits(orbits);
+    shorControllerRef.current?.dispose?.();
+  }
+
   return {
     getActiveView: () => activeView,
     switchView,
     bindOrbitDragFeedback,
     applyViewState,
+    dispose,
   };
 }

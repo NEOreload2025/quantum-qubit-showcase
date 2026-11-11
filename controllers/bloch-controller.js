@@ -9,6 +9,7 @@ import {
 } from "../utils/quantum-math.js";
 import { GATE_BLEND, GATE_TRAVEL, PULSE, SPIN } from "../utils/animation-timing.js";
 import { createBlochSphere } from "../scenes/bloch-sphere.js";
+import { disposeObject3D } from "../utils/scene-lifecycle.js";
 
 export function createBlochController({ canvas, scene: blochScene }) {
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
@@ -177,5 +178,20 @@ export function createBlochController({ canvas, scene: blochScene }) {
     renderer.render(blochScene, camera);
   }
 
-  return { camera, orbit, tick, render };
+  let alive = true;
+  function dispose() {
+    alive = false;
+    disposeObject3D(blochScene);
+  }
+
+  const liveTick = tick;
+  return {
+    camera,
+    orbit,
+    tick(...args) {
+      if (alive) liveTick(...args);
+    },
+    render,
+    dispose,
+  };
 }

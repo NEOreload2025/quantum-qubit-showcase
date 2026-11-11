@@ -5,6 +5,11 @@ import { createBlochController } from "./controllers/bloch-controller.js";
 import { createGatesController } from "./controllers/gates-controller.js";
 import { createEntangleController } from "./controllers/entangle-controller.js";
 import { createProcessorController } from "./controllers/processor-controller.js";
+import {
+  createAnimationLoop,
+  disposeShowcaseResources,
+  tickActive,
+} from "./utils/scene-lifecycle.js";
 
 const canvas = document.getElementById("canvas");
 const canvasWrap = document.querySelector(".canvas-wrap");
@@ -99,20 +104,44 @@ resize();
 const clock = new THREE.Clock();
 let elapsedTime = 0;
 const tickMap = { bloch, gates, entangle, processor };
+const controllers = [bloch, gates, entangle, processor];
 
-function animate() {
-  requestAnimationFrame(animate);
+const loop = createAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.1);
   elapsedTime += dt;
   const t = elapsedTime;
   const view = viewManager.getActiveView();
 
-  tickMap[view]?.tick(t, dt, view);
+  tickActive(tickMap, view, t, dt);
 
   if (view === "bloch") bloch.render(renderer);
   else if (view === "gates") gates.render(renderer);
   else if (view === "entangle") entangle.render(renderer);
   else if (view === "processor") processor.render(renderer);
+});
+
+let tornDown = false;
+
+function disposeShowcase() {
+  if (tornDown) return;
+  tornDown = true;
+  loop.stop();
+  for (const key of Object.keys(tickMap)) delete tickMap[key];
+  for (const ctrl of controllers) ctrl.dispose?.();
+  viewManager.dispose?.();
+  disposeShowcaseResources({
+    unbind: [
+      () => window.removeEventListener("resize", resize),
+      () => window.removeEventListener("pagehide", onPageHide),
+    ],
+    renderer,
+  });
 }
 
-animate();
+function onPageHide(event) {
+  if (event.persisted) return;
+  disposeShowcase();
+}
+
+window.addEventListener("pagehide", onPageHide);
+loop.start();
