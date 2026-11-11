@@ -9,6 +9,7 @@ import {
 import { PULSE, WOBBLE } from "../utils/animation-timing.js";
 import { createEntangleScene } from "../scenes/entangle-scene.js";
 import { disposeObject3D } from "../utils/scene-lifecycle.js";
+import { bindExclusive, releaseExclusive } from "../utils/dom-events.js";
 
 export function createEntangleController({ canvas }) {
   const entangle = createEntangleScene();
@@ -54,12 +55,18 @@ export function createEntangleController({ canvas }) {
     );
   }
 
+  const owned = [];
+  function on(el, group, type, handler) {
+    const ac = bindExclusive(el, group, type, handler);
+    if (ac) owned.push(() => releaseExclusive(el, group, ac));
+  }
+
   bellButtons.forEach((btn) => {
-    btn.addEventListener("click", () => applyTwoQubit(btn.dataset.bell));
+    on(btn, "entangle-bell", "click", () => applyTwoQubit(btn.dataset.bell));
   });
 
   measureButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
+    on(btn, "entangle-measure", "click", () => {
       const preset = TWO_QUBIT_PRESETS[activeBell];
       if (!preset?.entangled || !preset.measureMap) return;
       measuredQ1 = btn.dataset.measure;
@@ -113,6 +120,7 @@ export function createEntangleController({ canvas }) {
   let alive = true;
   function dispose() {
     alive = false;
+    while (owned.length) owned.pop()();
     disposeObject3D(entangle.scene);
   }
 

@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { initShorFlow } from "./shor-flow.js";
+import { initShorFlow, stepForward } from "./shor-flow.js";
+import { bindExclusive, releaseExclusive } from "./utils/dom-events.js";
 import { createViewManager } from "./controllers/view-manager.js";
 import { createBlochController } from "./controllers/bloch-controller.js";
 import { createGatesController } from "./controllers/gates-controller.js";
@@ -72,20 +73,20 @@ Object.entries(orbits).forEach(([name, orbit]) => {
 
 const shorPlaySide = document.getElementById("shor-play-side");
 const shorNextSide = document.getElementById("shor-next-side");
-if (shorPlaySide) {
-  shorPlaySide.addEventListener("click", () => {
-    viewManager.switchView("shor");
-    ensureShorController().play();
-  });
+const owned = [];
+function on(el, group, type, handler) {
+  const ac = bindExclusive(el, group, type, handler);
+  if (ac) owned.push(() => releaseExclusive(el, group, ac));
 }
-if (shorNextSide) {
-  shorNextSide.addEventListener("click", () => {
-    viewManager.switchView("shor");
-    const ctrl = ensureShorController();
-    const cur = ctrl.getActiveStep();
-    ctrl.selectStep(cur < 0 ? 0 : Math.min(cur + 1, 8));
-  });
-}
+on(shorPlaySide, "shor-side-play", "click", () => {
+  viewManager.switchView("shor");
+  ensureShorController().play();
+});
+on(shorNextSide, "shor-side-next", "click", () => {
+  viewManager.switchView("shor");
+  const ctrl = ensureShorController();
+  ctrl.selectStep(stepForward(ctrl.getActiveStep()));
+});
 
 function resize() {
   const w = canvasWrap.clientWidth;
@@ -98,7 +99,7 @@ function resize() {
   });
 }
 
-window.addEventListener("resize", resize);
+on(window, "showcase-resize", "resize", resize);
 resize();
 
 const clock = new THREE.Clock();
@@ -130,10 +131,7 @@ function disposeShowcase() {
   for (const ctrl of controllers) ctrl.dispose?.();
   viewManager.dispose?.();
   disposeShowcaseResources({
-    unbind: [
-      () => window.removeEventListener("resize", resize),
-      () => window.removeEventListener("pagehide", onPageHide),
-    ],
+    unbind: owned,
     renderer,
   });
 }
@@ -143,5 +141,5 @@ function onPageHide(event) {
   disposeShowcase();
 }
 
-window.addEventListener("pagehide", onPageHide);
+on(window, "showcase-pagehide", "pagehide", onPageHide);
 loop.start();

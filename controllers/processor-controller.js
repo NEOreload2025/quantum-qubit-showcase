@@ -2,6 +2,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { PULSE, SPIN, WOBBLE } from "../utils/animation-timing.js";
 import { createProcessorScene } from "../scenes/processor-scene.js";
 import { disposeObject3D } from "../utils/scene-lifecycle.js";
+import { bindExclusive, releaseExclusive } from "../utils/dom-events.js";
 
 export function createProcessorController({ canvas }) {
   const processor = createProcessorScene();
@@ -13,7 +14,7 @@ export function createProcessorController({ canvas }) {
   orbit.enabled = false;
 
   const entangleToggle = document.getElementById("entangle-toggle");
-  entangleToggle.addEventListener("change", () => {
+  const toggleBinding = bindExclusive(entangleToggle, "processor-links", "change", () => {
     processor.entangleLines.forEach((line) => {
       line.visible = entangleToggle.checked;
     });
@@ -41,6 +42,7 @@ export function createProcessorController({ canvas }) {
   let alive = true;
   function dispose() {
     alive = false;
+    releaseExclusive(entangleToggle, "processor-links", toggleBinding);
     disposeObject3D(processor.scene);
   }
 

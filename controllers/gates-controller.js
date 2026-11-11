@@ -4,8 +4,12 @@ import { CIRCUIT_STEPS, blochCoordsFromState } from "../utils/quantum-math.js";
 import { WOBBLE } from "../utils/animation-timing.js";
 import { createGatesScene } from "../scenes/gates-scene.js";
 import { disposeObject3D } from "../utils/scene-lifecycle.js";
+import { bindExclusive, releaseExclusive } from "../utils/dom-events.js";
+
+let activeGates = null;
 
 export function createGatesController({ canvas }) {
+  activeGates?.releaseSurface?.();
   const gates = createGatesScene();
   const orbit = new OrbitControls(gates.camera, canvas);
   orbit.enableDamping = true;
@@ -49,9 +53,15 @@ export function createGatesController({ canvas }) {
     updateCircuitUI();
   }
 
-  circuitNextBtn.addEventListener("click", () => setCircuitStep(circuitStep + 1));
+  const owned = [];
+  function on(el, group, type, handler) {
+    const ac = bindExclusive(el, group, type, handler);
+    if (ac) owned.push(() => releaseExclusive(el, group, ac));
+  }
 
-  circuitPlayBtn.addEventListener("click", () => {
+  on(circuitNextBtn, "gates-next", "click", () => setCircuitStep(circuitStep + 1));
+
+  on(circuitPlayBtn, "gates-play", "click", () => {
     if (circuitPlaying) {
       circuitPlaying = false;
       circuitPlayBtn.textContent = "▶ 播放電路";
@@ -94,18 +104,24 @@ export function createGatesController({ canvas }) {
   }
 
   let alive = true;
-  function dispose() {
+  function releaseSurface() {
     alive = false;
     circuitPlaying = false;
     if (circuitTimer) {
       clearInterval(circuitTimer);
       circuitTimer = null;
     }
+    while (owned.length) owned.pop()();
+  }
+
+  function dispose() {
+    releaseSurface();
     disposeObject3D(gates.scene);
+    if (activeGates === api) activeGates = null;
   }
 
   const liveTick = tick;
-  return {
+  const api = {
     camera: gates.camera,
     orbit,
     scene: gates.scene,
@@ -114,5 +130,8 @@ export function createGatesController({ canvas }) {
     },
     render,
     dispose,
+    releaseSurface,
   };
+  activeGates = api;
+  return api;
 }

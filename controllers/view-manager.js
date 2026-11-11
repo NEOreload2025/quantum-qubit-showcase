@@ -1,4 +1,5 @@
 import { disposeAllOrbits, syncOrbitListeners } from "../utils/scene-lifecycle.js";
+import { bindExclusive, releaseExclusive } from "../utils/dom-events.js";
 
 export const VIEW_META = {
   bloch: {
@@ -120,14 +121,16 @@ export function createViewManager(deps) {
     }
   }
 
-  const tabListeners = [];
+  const owned = [];
   tabs.forEach((tab) => {
-    const handler = () => switchView(tab.dataset.view);
-    tab.addEventListener("click", handler);
-    tabListeners.push([tab, handler]);
+    const ac = bindExclusive(tab, "view-tab", "click", () => switchView(tab.dataset.view));
+    if (ac) owned.push(() => releaseExclusive(tab, "view-tab", ac));
   });
 
+  const dragBound = new WeakSet();
   function bindOrbitDragFeedback(orbit, name) {
+    if (!orbit || dragBound.has(orbit)) return;
+    dragBound.add(orbit);
     orbit.addEventListener("start", () => {
       canvasWrap.classList.add("is-dragging");
       canvasWrap.dataset.dragScene = name;
@@ -142,10 +145,7 @@ export function createViewManager(deps) {
   applyViewState(activeView);
 
   function dispose() {
-    for (const [tab, handler] of tabListeners) {
-      tab.removeEventListener("click", handler);
-    }
-    tabListeners.length = 0;
+    while (owned.length) owned.pop()();
     disposeAllOrbits(orbits);
     shorControllerRef.current?.dispose?.();
   }
