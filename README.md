@@ -31,12 +31,16 @@ python3 -m http.server 8765
 - 現代瀏覽器（支援 ES Modules）
 - 本機 HTTP 伺服器（不可直接用 `file://` 開啟）
 
+## 線上版
+
+- Cloudflare Pages：https://quantum-qubit-showcase.pages.dev/
+- GitHub Pages（尚未關閉）：https://neoreload2025.github.io/quantum-qubit-showcase/
+
+本站為純靜態檔，相對路徑可在網站根路徑（`/`）運作。Cloudflare Pages 目前以 Direct Upload 發布；合併本 PR 並不會自動部署。GitHub Pages 設定先維持原樣，是否關閉或改轉址由倉庫擁有者決定。
+
 ## GitHub Pages
 
-1. 前往 repo **Settings → Pages**
-2. **Source** 選 `Deploy from a branch`
-3. **Branch** 選 `main`，資料夾選 `/ (root)`
-4. 儲存後等待數分鐘，網址會顯示在 Pages 設定頁
+若仍要從 GitHub 發布：Settings → Pages → Source 選 `Deploy from a branch`，Branch 選 `main`，資料夾選 `/ (root)`。
 
 ## 用 Grok Build 繼續開發
 
